@@ -3,66 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Point Generator</title>
+    <title>Dynamic 2D Point Generator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             margin: 0;
             padding: 20px;
+            color: #fff;
         }
         .container {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
             width: 100%;
+            z-index: 10;
+            animation: fadeIn 1s ease-in-out;
         }
         canvas {
-            border: 1px solid #000;
+            border: 2px solid #1e3c72;
+            border-radius: 8px;
             cursor: crosshair;
             max-width: 100%;
+            transition: transform 0.3s ease;
+            z-index: 5;
+            display: block; /* Ensure canvas is block to avoid inline spacing issues */
         }
-        .input-section, .points-section {
-            margin: 20px 0;
+        canvas:hover {
+            transform: scale(1.02);
+        }
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
         }
         .input-section input, .input-section button {
-            margin: 5px;
-            padding: 8px;
-            font-size: 16px;
-        }
-        .points-section {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
             padding: 10px;
-        }
-        .copy-button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
+            font-size: 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .input-section input {
+            background: #f0f4f8;
+            color: #333;
+        }
+        .input-section input:focus {
+            outline: none;
+            box-shadow: 0 0 8px rgba(30, 60, 114, 0.5);
+        }
+        .input-section button {
+            background: #28a745;
+            color: white;
             cursor: pointer;
         }
+        .input-section button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .points-section {
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #333;
+            animation: slideIn 0.5s ease-out;
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: #1e3c72 #f0f4f8;
+        }
+        .points-section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .points-section::-webkit-scrollbar-track {
+            background: #f0f4f8;
+            border-radius: 4px;
+        }
+        .points-section::-webkit-scrollbar-thumb {
+            background: #1e3c72;
+            border-radius: 4px;
+        }
+        .points-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .points-section li {
+            padding: 5px 0;
+            transition: background 0.3s ease;
+        }
+        .points-section li:hover {
+            background: #e9ecef;
+        }
+        .copy-button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
         .copy-button:hover {
-            background-color: #218838;
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .copy-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
         }
         .error {
-            color: red;
-            margin-top: 10px;
+            color: #dc3545;
+            margin: 10px 0;
+            animation: shake 0.3s ease;
+        }
+        .background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            opacity: 0.3;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
         }
     </style>
 </head>
 <body>
+    <canvas id="backgroundCanvas" class="background-canvas"></canvas>
     <div class="container">
+        <h2 style="text-align: center; color: #1e3c72;">2D Point Generator</h2>
         <div class="input-section">
-            <h2>Canvas Setup</h2>
             <input type="number" id="canvasWidth" placeholder="Canvas Width (px)" min="100">
             <input type="number" id="canvasHeight" placeholder="Canvas Height (px)" min="100">
             <input type="number" id="xUnit" placeholder="Pixels per X unit" min="1">
@@ -72,22 +173,153 @@
         </div>
         <canvas id="canvas"></canvas>
         <div class="error" id="error"></div>
-        <div class="points-section" id="pointsList"></div>
+        <div class="points-section" id="pointsList">
+            <h3>Points (x, y):</h3>
+            <p>No points selected.</p>
+        </div>
         <button class="copy-button" onclick="copyPoints()" disabled>Copy Points</button>
     </div>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const bgCanvas = document.getElementById('backgroundCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
         const imageInput = document.getElementById('imageInput');
         const pointsList = document.getElementById('pointsList');
         const errorDiv = document.getElementById('error');
         const copyButton = document.querySelector('.copy-button');
-        
+
         let points = [];
         let img = null;
         let xUnit = 1;
         let yUnit = 1;
+        let animations = [];
+        let particles = [];
+        let coordinateSystems = [];
+
+        // Resize background canvas to window
+        bgCanvas.width = window.innerWidth;
+        bgCanvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        });
+
+        // Particle for background animation
+        class Particle {
+            constructor() {
+                this.x = Math.random() * bgCanvas.width;
+                this.y = Math.random() * bgCanvas.height;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = `hsl(${Math.random() * 360}, 50%, 70%)`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > bgCanvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > bgCanvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                bgCtx.fillStyle = this.color;
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+                bgCtx.fill();
+            }
+        }
+
+        // Coordinate system animation
+        class CoordinateSystem {
+            constructor() {
+                this.x = Math.random() * bgCanvas.width;
+                this.y = Math.random() * bgCanvas.height;
+                this.size = Math.random() * 50 + 30;
+                this.angle = 0;
+                this.speed = Math.random() * 0.02 + 0.01;
+                this.opacity = Math.random() * 0.3 + 0.2;
+            }
+
+            update() {
+                this.angle += this.speed;
+                this.y += Math.sin(this.angle) * 0.5;
+            }
+
+            draw() {
+                bgCtx.save();
+                bgCtx.globalAlpha = this.opacity;
+                bgCtx.translate(this.x, this.y);
+                bgCtx.rotate(this.angle);
+
+                // Draw axes
+                bgCtx.strokeStyle = '#ffffff';
+                bgCtx.lineWidth = 2;
+                bgCtx.beginPath();
+                bgCtx.moveTo(-this.size, 0);
+                bgCtx.lineTo(this.size, 0);
+                bgCtx.moveTo(0, -this.size);
+                bgCtx.lineTo(0, this.size);
+                bgCtx.stroke();
+
+                // Draw arrowheads
+                bgCtx.fillStyle = '#ffffff';
+                bgCtx.beginPath();
+                bgCtx.moveTo(this.size, 0);
+                bgCtx.lineTo(this.size - 10, 5);
+                bgCtx.lineTo(this.size - 10, -5);
+                bgCtx.fill();
+                bgCtx.beginPath();
+                bgCtx.moveTo(0, this.size);
+                bgCtx.lineTo(5, this.size - 10);
+                bgCtx.lineTo(-5, this.size - 10);
+                bgCtx.fill();
+
+                bgCtx.restore();
+            }
+        }
+
+        // Point animation on main canvas
+        class PointAnimation {
+            constructor(x, y, startTime) {
+                this.x = x;
+                this.y = y;
+                this.startTime = startTime;
+                this.duration = 1000;
+            }
+
+            draw(currentTime) {
+                const elapsed = currentTime - this.startTime;
+                if (elapsed > this.duration) return false;
+
+                const scale = 1 + 0.5 * Math.sin((elapsed / this.duration) * Math.PI);
+                ctx.save();
+                ctx.fillStyle = `rgba(255, 0, 0, ${1 - elapsed / this.duration})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3 * scale, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Ripple effect
+                const rippleRadius = (elapsed / this.duration) * 20;
+                ctx.strokeStyle = `rgba(255, 0, 0, ${0.5 - elapsed / this.duration * 0.5})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, rippleRadius, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.restore();
+                return true;
+            }
+        }
+
+        // Initialize particles and coordinate systems
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
+        for (let i = 0; i < 5; i++) {
+            coordinateSystems.push(new CoordinateSystem());
+        }
 
         function setupCanvas() {
             errorDiv.textContent = '';
@@ -104,6 +336,7 @@
             canvas.width = width;
             canvas.height = height;
             points = [];
+            animations = [];
             updatePointsList();
             copyButton.disabled = true;
 
@@ -111,11 +344,13 @@
                 img = new Image();
                 img.onload = () => {
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    animate(); // Start animation loop after image loads
                 };
                 img.src = URL.createObjectURL(imageInput.files[0]);
             } else {
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                animate(); // Start animation loop for non-image case
             }
         }
 
@@ -123,21 +358,21 @@
             if (!canvas.width || !canvas.height) return;
 
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            // Calculate scale factors for CSS vs. canvas resolution
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            // Adjust click coordinates to match canvas resolution
+            const pixelX = (e.clientX - rect.left) * scaleX;
+            const pixelY = (e.clientY - rect.top) * scaleY;
 
-            // Convert pixel coordinates to unit coordinates
-            const unitX = x / xUnit;
-            const unitY = (canvas.height - y) / yUnit; // Invert Y for OpenGL convention
+            // Convert pixel coordinates to unit coordinates for storage
+            const unitX = pixelX / xUnit;
+            const unitY = (canvas.height - pixelY) / yUnit;
 
-            points.push({ x: unitX.toFixed(3), y: unitY.toFixed(3) });
+            // Store the point with both unit and pixel coordinates
+            points.push({ x: unitX.toFixed(3), y: unitY.toFixed(3), pixelX, pixelY });
+            animations.push(new PointAnimation(pixelX, pixelY, performance.now()));
             updatePointsList();
-
-            // Draw point
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, 2 * Math.PI);
-            ctx.fill();
         });
 
         function updatePointsList() {
@@ -151,6 +386,7 @@
             points.forEach((point, index) => {
                 const li = document.createElement('li');
                 li.textContent = `${index + 1}: (${point.x}, ${point.y})`;
+                li.style.animation = `slideIn 0.3s ease ${index * 0.1}s both`;
                 ul.appendChild(li);
             });
             pointsList.appendChild(ul);
@@ -160,11 +396,54 @@
         function copyPoints() {
             const glFormat = points.map(p => `glVertex2f(${p.x}f, ${p.y}f);`).join('\n');
             navigator.clipboard.writeText(glFormat).then(() => {
-                alert('Points copied to clipboard in OpenGL format!');
+                copyButton.textContent = 'Copied!';
+                copyButton.style.background = '#28a745';
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Points';
+                    copyButton.style.background = '#007bff';
+                }, 1000);
             }).catch(err => {
                 errorDiv.textContent = 'Failed to copy points: ' + err;
             });
         }
+
+        function animate() {
+            // Background animation
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            coordinateSystems.forEach(cs => {
+                cs.update();
+                cs.draw();
+            });
+
+            // Main canvas animation
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (img) {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            const currentTime = performance.now();
+            animations = animations.filter(anim => anim.draw(currentTime));
+
+            // Draw all stored points using their pixel coordinates
+            points.forEach(p => {
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(p.pixelX, p.pixelY, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation loop
+        animate();
     </script>
 </body>
 </html>
