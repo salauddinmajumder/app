@@ -3,447 +3,1638 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic 2D Point Generator</title>
+    <title>✔️ TaskMaster | Your Focus Hub</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        /* --- CSS Variables and Themes --- */
+        :root {
+            --font-main: 'Poppins', sans-serif;
+            /* Light Theme */
+            --bg-color-light: #f0f2f5;
+            --card-bg-light: #ffffff;
+            --text-color-light: #333;
+            --subtle-text-light: #777;
+            --accent-color-light: #007bff;
+            --accent-hover-light: #0056b3;
+            --success-color-light: #28a745;
+            --warning-color-light: #ffc107;
+            --danger-color-light: #dc3545;
+            --border-color-light: #e0e0e0;
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08); /* Softer shadow */
+            --neumorphic-shadow-light-outer: 5px 5px 10px #d9dcdf, -5px -5px 10px #ffffff;
+            --neumorphic-shadow-light-inner: inset 3px 3px 6px #d9dcdf, inset -3px -3px 6px #ffffff;
+            /* Dark Theme */
+            --bg-color-dark: #1a1a2e;
+            --card-bg-dark: #2a2a4e;
+            --text-color-dark: #e0e0e0;
+            --subtle-text-dark: #a0a0a0;
+            --accent-color-dark: #3a86ff;
+            --accent-hover-dark: #5e9fff;
+            --success-color-dark: #4caf50;
+            --warning-color-dark: #ffeb3b;
+            --danger-color-dark: #f44336;
+            --border-color-dark: #404060;
+            --shadow-dark: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --neumorphic-shadow-dark-outer: 5px 5px 10px #141424, -5px -5px 10px #202038;
+            --neumorphic-shadow-dark-inner: inset 3px 3px 6px #141424, inset -3px -3px 6px #202038;
+            /* Default to Light Theme */
+            --bg-color: var(--bg-color-light);
+            --card-bg: var(--card-bg-light);
+            --text-color: var(--text-color-light);
+            --subtle-text: var(--subtle-text-light);
+            --accent-color: var(--accent-color-light);
+            --accent-hover: var(--accent-hover-light);
+            --success-color: var(--success-color-light);
+            --warning-color: var(--warning-color-light);
+            --danger-color: var(--danger-color-light);
+            --border-color: var(--border-color-light);
+            --shadow: var(--shadow-light);
+            --neumorphic-outer: var(--neumorphic-shadow-light-outer);
+            --neumorphic-inner: var(--neumorphic-shadow-light-inner);
+
+            --priority-low: #28a745;
+            --priority-medium: #ffc107;
+            --priority-high: #dc3545;
+
+            --timer-pomodoro: #ff6b6b;
+            --timer-short-break: #4dabf7;
+            --timer-long-break: #4dd0e1;
+            --timer-custom: #fcc419;
+            --timer-stopwatch: #ced4da;
+        }
+
+        body.dark-mode {
+            --bg-color: var(--bg-color-dark);
+            --card-bg: var(--card-bg-dark);
+            --text-color: var(--text-color-dark);
+            --subtle-text: var(--subtle-text-dark);
+            --accent-color: var(--accent-color-dark);
+            --accent-hover: var(--accent-hover-dark);
+            --success-color: var(--success-color-dark);
+            --warning-color: var(--warning-color-dark);
+            --danger-color: var(--danger-color-dark);
+            --border-color: var(--border-color-dark);
+            --shadow: var(--shadow-dark);
+            --neumorphic-outer: var(--neumorphic-shadow-dark-outer);
+            --neumorphic-inner: var(--neumorphic-shadow-dark-inner);
+            --priority-low: #4caf50;
+            --priority-medium: #ffeb3b;
+            --priority-high: #f44336;
+        }
+
+        /* --- Global Styles & Reset --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-            color: #fff;
+            padding: 0;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 1rem;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            min-height: 100vh; /* Ensure body takes full height */
         }
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
-            width: 100%;
-            z-index: 10;
-            animation: fadeIn 1s ease-in-out;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
-        canvas {
-            border: 2px solid #1e3c72;
+        h1, h2, h3 { margin-bottom: 0.8rem; font-weight: 600; }
+        h1 { font-size: 2.2rem; }
+        h2 { font-size: 1.8rem; }
+        h3 { font-size: 1.4rem; }
+        button, input, select {
+            font-family: inherit;
+            font-size: 1rem;
+            border: none;
             border-radius: 8px;
-            cursor: crosshair;
-            max-width: 100%;
-            transition: transform 0.3s ease;
-            z-index: 5;
-            display: block; /* Ensure canvas is block to avoid inline spacing issues */
-        }
-        canvas:hover {
-            transform: scale(1.02);
-        }
-        .input-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .input-section input, .input-section button {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-        .input-section input {
-            background: #f0f4f8;
-            color: #333;
-        }
-        .input-section input:focus {
+            padding: 0.6rem 1.2rem;
             outline: none;
-            box-shadow: 0 0 8px rgba(30, 60, 114, 0.5);
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; /* Added color transition */
         }
-        .input-section button {
-            background: #28a745;
-            color: white;
+        button {
             cursor: pointer;
-        }
-        .input-section button:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-        .points-section {
-            min-height: 100px;
-            max-height: 200px;
-            overflow-y: auto;
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 15px;
-            margin: 20px 0;
-            color: #333;
-            animation: slideIn 0.5s ease-out;
-            box-sizing: border-box;
-            scrollbar-width: thin;
-            scrollbar-color: #1e3c72 #f0f4f8;
-        }
-        .points-section::-webkit-scrollbar {
-            width: 8px;
-        }
-        .points-section::-webkit-scrollbar-track {
-            background: #f0f4f8;
-            border-radius: 4px;
-        }
-        .points-section::-webkit-scrollbar-thumb {
-            background: #1e3c72;
-            border-radius: 4px;
-        }
-        .points-section ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .points-section li {
-            padding: 5px 0;
-            transition: background 0.3s ease;
-        }
-        .points-section li:hover {
-            background: #e9ecef;
-        }
-        .copy-button {
-            padding: 12px 24px;
-            background: #007bff;
+            background-color: var(--accent-color);
             color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: var(--neumorphic-outer);
         }
-        .copy-button:hover {
-            background: #0056b3;
-            transform: translateY(-2px);
+        button:hover { background-color: var(--accent-hover); }
+        button:active { transform: scale(0.98); box-shadow: var(--neumorphic-inner); }
+        button:disabled { background-color: var(--subtle-text); cursor: not-allowed; box-shadow: none; transform: none; }
+        button.secondary { background-color: var(--card-bg); color: var(--accent-color); border: 1px solid var(--accent-color); box-shadow: none; }
+        button.secondary:hover { background-color: var(--accent-color); color: white; box-shadow: var(--neumorphic-outer); }
+        button.secondary:active { box-shadow: var(--neumorphic-inner); }
+        button.danger { background-color: var(--danger-color); }
+        button.danger:hover { background-color: #c82333; }
+        button.success { background-color: var(--success-color); }
+        button.success:hover { background-color: #218838; }
+        input[type="text"], input[type="number"], select {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-shadow: var(--neumorphic-inner);
+            padding: 0.7rem 1rem;
         }
-        .copy-button:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
+
+        /* --- Utility Classes --- */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .mr-1 { margin-right: 1rem; }
+        .ml-1 { margin-left: 1rem; }
+        .d-flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        .gap-1 { gap: 1rem; }
+        .flex-wrap { flex-wrap: wrap; }
+
+        /* --- Header --- */
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
         }
-        .error {
-            color: #dc3545;
-            margin: 10px 0;
-            animation: shake 0.3s ease;
+        .app-header h1 { margin-bottom: 0.5rem; animation: fadeInDown 0.8s ease-out; }
+        .quote-carousel {
+            font-style: italic;
+            font-size: 1.1rem;
+            min-height: 40px; /* Prevent layout shift */
+            position: relative; /* Needed for absolute positioning of quotes */
         }
-        .background-canvas {
-            position: fixed;
-            top: 0;
+        /* Quote Styling for JS control */
+        .quote {
+            position: absolute; /* Position all quotes on top of each other */
+            width: 100%;
             left: 0;
-            z-index: 1;
-            opacity: 0.3;
+            top: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out; /* Fade transition */
+            pointer-events: none; /* Prevent interaction when invisible */
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .quote.active {
+            opacity: 1;
+            pointer-events: auto;
+            position: relative; /* Take up space when active */
         }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+
+
+        /* --- Controls Bar --- */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 0.5rem; /* Space between items when wrapped */
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
         }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        .controls-bar .username-display { font-weight: 600; margin-right: auto; /* Push buttons to the right */ }
+        .theme-toggle, .settings-btn {
+            background: none; border: none; font-size: 1.5rem; cursor: pointer;
+            color: var(--text-color); padding: 0.5rem; border-radius: 50%;
+            width: 40px; height: 40px; display: inline-flex; justify-content: center;
+            align-items: center; transition: background-color 0.2s ease, transform 0.2s ease;
         }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+        .theme-toggle:hover, .settings-btn:hover { background-color: rgba(128, 128, 128, 0.1); transform: scale(1.1); }
+
+        /* --- Main Layout (Grid) --- */
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
-        @keyframes float {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0); }
+
+        /* --- Card Styles --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
+        /* Stagger card animation */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card h2 { margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: var(--accent-color); }
+
+        /* --- Timer Area --- */
+        .timer-modes {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Allow wrapping */
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .timer-modes button {
+            flex-grow: 1; flex-basis: auto; /* Allow natural sizing and wrapping */
+            font-size: 0.9rem; padding: 0.5rem 0.8rem; box-shadow: none;
+            border: 1px solid var(--border-color); background-color: var(--bg-color);
+            color: var(--subtle-text); min-width: 80px; /* Prevent excessive shrinking */
+        }
+        .timer-modes button.active { background-color: var(--accent-color); color: white; font-weight: 600; box-shadow: var(--neumorphic-outer); }
+        .timer-display-wrapper { display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem; position: relative; }
+        .timer-circle {
+            width: 200px; height: 200px; border-radius: 50%; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; position: relative;
+            background-color: var(--bg-color); box-shadow: var(--neumorphic-inner);
+            transition: width 0.3s ease, height 0.3s ease; /* Smooth resize */
+        }
+        .timer-circle svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+        .timer-circle circle { fill: none; stroke-width: 10; }
+        .timer-circle .background-circle { stroke: var(--border-color); }
+        .timer-circle .progress-circle { stroke: var(--timer-pomodoro); stroke-linecap: round; transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease; }
+        #timer-display { font-size: 3rem; font-weight: 600; color: var(--text-color); z-index: 1; transition: font-size 0.3s ease; }
+        #timer-mode-label { font-size: 0.9rem; color: var(--subtle-text); margin-top: -5px; z-index: 1; transition: font-size 0.3s ease;}
+        .custom-timer-input { margin-bottom: 1rem; }
+        .custom-timer-input label { display: block; margin-bottom: 0.3rem; font-size: 0.9rem; }
+        .timer-controls { display: flex; justify-content: center; gap: 1rem; }
+        .timer-controls button { padding: 0.8rem 1.5rem; font-size: 1.1rem; min-width: 100px; }
+        .timer-message { text-align: center; margin-top: 1rem; font-style: italic; color: var(--subtle-text); min-height: 20px; }
+
+        /* --- To-Do List Area --- */
+        .add-task-form { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; /* Allow wrapping */ }
+        .add-task-form input[type="text"] { flex: 1 1 200px; /* Grow, shrink, base width */ box-shadow: var(--neumorphic-inner); }
+        .add-task-form select { flex: 0 1 120px; /* Don't grow, shrink, base width */ box-shadow: var(--neumorphic-inner); }
+        .add-task-form button { flex: 0 0 auto; /* Don't grow or shrink */ padding: 0.7rem 1rem; }
+        .filter-buttons {
+             margin-bottom: 1rem; display: flex; flex-wrap: wrap; /* Allow wrapping */ gap: 0.5rem;
+        }
+        .filter-buttons button {
+            flex: 1 1 auto; /* Grow, shrink, auto base */ font-size: 0.9rem; padding: 0.5rem 0.8rem;
+            box-shadow: none; border: 1px solid var(--border-color); background-color: var(--bg-color);
+            color: var(--subtle-text); min-width: 70px; /* Prevent excessive shrinking */
+        }
+        .filter-buttons button.active { background-color: var(--accent-color); color: white; font-weight: 600; box-shadow: var(--neumorphic-outer); }
+        #task-list {
+            list-style: none; padding: 0; max-height: 400px; overflow-y: auto;
+            scrollbar-width: thin; scrollbar-color: var(--accent-color) var(--bg-color);
+        }
+        #task-list::-webkit-scrollbar { width: 8px; }
+        #task-list::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 4px; }
+        #task-list::-webkit-scrollbar-thumb { background-color: var(--accent-color); border-radius: 4px; border: 2px solid var(--bg-color); }
+        .no-tasks-message { text-align: center; color: var(--subtle-text); padding: 1rem 0; }
+        .task-item {
+            display: flex; align-items: center; padding: 0.8rem 1rem; margin-bottom: 0.8rem;
+            background-color: var(--bg-color); border-radius: 8px; border-left: 5px solid var(--border-color);
+            transition: background-color 0.2s ease, border-left-color 0.2s ease, opacity 0.3s ease;
+            /* Use fade-in animation - less disruptive on list updates */
+            animation: fadeInUp 0.4s ease-out forwards;
+            opacity: 0; /* Start hidden for animation */
+            transform: translateY(10px); /* Start slightly lower */
+            position: relative;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.05), inset -2px -2px 4px rgba(255,255,255,0.6);
+        }
+        body.dark-mode .task-item { box-shadow: inset 2px 2px 4px rgba(0,0,0,0.2), inset -2px -2px 4px rgba(255,255,255,0.1); }
+        .task-item.priority-low { border-left-color: var(--priority-low); }
+        .task-item.priority-medium { border-left-color: var(--priority-medium); }
+        .task-item.priority-high { border-left-color: var(--priority-high); }
+        .task-item.completed { opacity: 0.6; }
+        .task-item.completed .task-text { text-decoration: line-through; color: var(--subtle-text); }
+        .task-item input[type="checkbox"] { margin-right: 0.8rem; width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-color); flex-shrink: 0; /* Prevent shrinking */}
+        .task-item .task-text { flex-grow: 1; margin-right: 0.5rem; word-break: break-word; }
+        .task-item .task-text.editing { display: none; }
+        .task-item .edit-input { display: none; flex-grow: 1; margin-right: 0.5rem; }
+        .task-item .edit-input.editing { display: block; }
+        .task-actions { display: flex; align-items: center; flex-shrink: 0; /* Prevent shrinking */ }
+        .task-actions button {
+            background: none; border: none; color: var(--subtle-text); font-size: 1rem;
+            padding: 0.3rem; margin-left: 0.3rem; cursor: pointer; box-shadow: none;
+        }
+        .task-actions button:hover { color: var(--accent-color); background: none; transform: scale(1.1); }
+        .task-actions .delete-btn:hover { color: var(--danger-color); }
+        .task-actions .save-btn:hover { color: var(--success-color); }
+        .task-item.pending.wiggle { animation: wiggle 0.5s ease-in-out; }
+        .task-item[draggable="true"] { cursor: move; }
+        .task-item.dragging { opacity: 0.5; border: 2px dashed var(--accent-color); background: rgba(0, 123, 255, 0.05); }
+        .drag-over { background-color: rgba(0, 123, 255, 0.1); border-top: 2px dashed var(--accent-color); }
+
+        /* --- Stats Area --- */
+        .stats-area .stat-item { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem; font-size: 0.95rem; gap: 0.5rem; }
+        .stats-area .stat-label { color: var(--subtle-text); flex-shrink: 0; }
+        .stats-area .stat-value { font-weight: 600; text-align: right; }
+        .progress-bar-container { width: 100%; background-color: var(--border-color); border-radius: 5px; height: 15px; overflow: hidden; margin-top: 1rem; margin-bottom: 1rem; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-color), var(--success-color)); border-radius: 5px; transition: width 0.5s ease-out; text-align: center; color: white; font-size: 0.75rem; line-height: 15px; }
+        .pomodoro-batches { margin-top: 0.8rem; font-size: 1.5rem; text-align: center; min-height: 30px; word-break: break-all; }
+        .pomodoro-batches span { margin: 0 2px; display: inline-block; } /* Ensure spans don't break words */
+
+        /* --- Settings Panel (Modal Style) --- */
+        .settings-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; padding: 1rem; }
+        .settings-overlay.visible { opacity: 1; visibility: visible; }
+        .settings-panel { background-color: var(--card-bg); padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-dark); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; transform: scale(0.9); transition: transform 0.3s ease; }
+        .settings-overlay.visible .settings-panel { transform: scale(1); }
+        .settings-panel h2 { text-align: center; margin-bottom: 1.5rem; color: var(--accent-color); }
+        .settings-close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.8rem; color: var(--subtle-text); cursor: pointer; box-shadow: none; }
+        .settings-close-btn:hover { color: var(--danger-color); background: none; }
+        .settings-section { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+        .settings-section:last-child { border-bottom: none; padding-bottom: 0; }
+        .settings-section h3 { font-size: 1.2rem; margin-bottom: 0.8rem; }
+        .settings-section label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem; }
+        .settings-section input[type="number"], .settings-section input[type="text"], .settings-section select { margin-bottom: 0.8rem; width: 100%; /* Make inputs full width */ }
+        .settings-section .sound-toggles { display: flex; flex-direction: column; gap: 0.8rem; /* Increased gap */ }
+        .settings-section .sound-toggles label { display: flex; align-items: center; justify-content: space-between; font-weight: normal; }
+        .settings-section .sound-toggles input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent-color); margin-left: 1rem; /* Space before toggle */ flex-shrink: 0; }
+
+        /* --- Modals (General Purpose) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1050; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; padding: 1rem; }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--card-bg); padding: 2rem; border-radius: 10px; box-shadow: var(--shadow-dark); text-align: center; max-width: 400px; width: 100%; transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-content h3 { margin-bottom: 1rem; color: var(--accent-color); }
+        .modal-content p { margin-bottom: 1.5rem; }
+        .modal-content button { margin-top: 0.5rem; margin-left: 0.5rem; } /* Add some spacing */
+        .modal-content button:first-of-type { margin-left: 0; } /* No left margin for first button */
+
+
+        /* --- Confetti Animation --- */
+        .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; overflow: hidden; }
+        .confetti { position: absolute; width: 10px; height: 20px; background-color: #f00; opacity: 0; animation: confetti-fall 3s ease-out forwards; }
+        @keyframes confetti-fall { 0% { transform: translateY(-10vh) rotateZ(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotateZ(720deg); opacity: 0; } }
+
+        /* --- Animations --- */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } /* Adjusted transform */
+        /* @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } } // Keep fadeInUp instead */
+        @keyframes wiggle { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-2deg); } 75% { transform: translateX(5px) rotate(2deg); } }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 768px) {
+             h1 { font-size: 1.8rem; }
+             h2 { font-size: 1.5rem; }
+             h3 { font-size: 1.2rem; }
+             .container { padding: 0 0.8rem; } /* Slightly more padding */
+             body { padding: 0.8rem; }
+             .main-content { grid-template-columns: 1fr; /* Stack cards */ }
+             .timer-circle { width: 180px; height: 180px; }
+             #timer-display { font-size: 2.5rem; }
+             #timer-mode-label { font-size: 0.85rem; }
+             .add-task-form { flex-direction: column; }
+             .add-task-form select { flex-basis: auto; width: 100%; /* Full width when stacked */ }
+             .settings-panel { padding: 1.5rem; }
+             .controls-bar { flex-direction: row; /* Keep row but allow wrap */}
+             .controls-bar .username-display { margin-bottom: 0; } /* Remove margin when wrapping */
+             .controls-bar > div:last-child { margin-left: auto; } /* Keep buttons right */
+        }
+
+        @media (max-width: 480px) {
+             body { padding: 0.5rem; }
+             .container { padding: 0 0.5rem; }
+             h1 { font-size: 1.6rem; }
+             h2 { font-size: 1.4rem; }
+             h3 { font-size: 1.1rem; }
+             .app-header { padding: 1rem; }
+             .quote-carousel { font-size: 1rem; min-height: 35px; }
+             .timer-circle { width: 150px; height: 150px; } /* Smaller timer */
+             #timer-display { font-size: 2rem; }
+             #timer-mode-label { font-size: 0.8rem; }
+             .timer-modes button, .filter-buttons button { font-size: 0.8rem; padding: 0.4rem 0.6rem; min-width: 60px; }
+             .timer-controls { gap: 0.5rem; }
+             .timer-controls button { padding: 0.6rem 1rem; font-size: 0.9rem; min-width: 80px;}
+             .task-item { padding: 0.6rem 0.8rem; }
+             .task-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 0.6rem; }
+             .task-actions button { font-size: 0.9rem; padding: 0.2rem; margin-left: 0.2rem;}
+             .modal-content, .settings-panel { padding: 1.2rem; }
+             .settings-panel h2 { font-size: 1.3rem; }
+             button, input, select { font-size: 0.95rem; padding: 0.5rem 1rem; } /* Slightly smaller controls */
+             .controls-bar .username-display { font-size: 0.9rem; }
+             .theme-toggle, .settings-btn { width: 35px; height: 35px; font-size: 1.3rem; }
+        }
+         @media (max-width: 360px) {
+              .timer-circle { width: 130px; height: 130px; }
+              #timer-display { font-size: 1.8rem; }
+              .pomodoro-batches { font-size: 1.2rem; }
+         }
+
     </style>
 </head>
 <body>
-    <canvas id="backgroundCanvas" class="background-canvas"></canvas>
+
     <div class="container">
-        <h2 style="text-align: center; color: #1e3c72;">2D Point Generator</h2>
-        <div class="input-section">
-            <input type="number" id="canvasWidth" placeholder="Canvas Width (px)" min="100">
-            <input type="number" id="canvasHeight" placeholder="Canvas Height (px)" min="100">
-            <input type="number" id="xUnit" placeholder="Pixels per X unit" min="1">
-            <input type="number" id="yUnit" placeholder="Pixels per Y unit" min="1">
-            <input type="file" id="imageInput" accept="image/*">
-            <button onclick="setupCanvas()">Setup Canvas</button>
+
+        <!-- Header -->
+        <header class="app-header">
+            <h1>SurSoi Task Manager</h1>
+             <div class="quote-carousel" id="quote-carousel">
+                <!-- Quotes will be loaded by JS -->
+                <p class="quote">"The secret of getting ahead is getting started." - Mark Twain</p>
+                <p class="quote">"Focus on being productive instead of busy." - Tim Ferriss</p>
+                <p class="quote">"The key is not to prioritize what's on your schedule, but to schedule your priorities." - Stephen Covey</p>
+                 <p class="quote">"Well done is better than well said." - Benjamin Franklin</p>
+                 <p class="quote">"Believe you can and you're halfway there." - Theodore Roosevelt</p>
+            </div>
+        </header>
+
+        <!-- Controls Bar -->
+        <div class="controls-bar">
+            <span class="username-display">Hi User! Ready to conquer today?</span>
+            <div>
+                <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle Theme">☀️</button>
+                <button class="settings-btn" id="settings-btn" aria-label="Open Settings">⚙️</button>
+            </div>
         </div>
-        <canvas id="canvas"></canvas>
-        <div class="error" id="error"></div>
-        <div class="points-section" id="pointsList">
-            <h3>Points (x, y):</h3>
-            <p>No points selected.</p>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Timer Section -->
+            <section class="card timer-section">
+                <h2>Focus Timer</h2>
+                <div class="timer-modes">
+                    <button data-mode="pomodoro" class="active">Pomodoro (25m)</button>
+                    <button data-mode="shortBreak">Short Break (5m)</button>
+                    <button data-mode="longBreak">Long Break (15m)</button>
+                    <button data-mode="stopwatch">Stopwatch</button>
+                    <button data-mode="custom">Custom</button>
+                </div>
+
+                <div class="timer-display-wrapper">
+                     <div class="timer-circle">
+                         <svg viewBox="0 0 100 100">
+                            <circle class="background-circle" cx="50" cy="50" r="45"></circle>
+                            <circle class="progress-circle" cx="50" cy="50" r="45" pathLength="100"></circle>
+                        </svg>
+                        <div id="timer-display">25:00</div>
+                        <div id="timer-mode-label">Pomodoro</div>
+                     </div>
+                </div>
+                 <div class="custom-timer-input hidden" id="custom-timer-input-area">
+                     <label for="custom-minutes">Set time (minutes):</label>
+                     <input type="number" id="custom-minutes" min="1" value="10">
+                 </div>
+                 <div class="timer-controls">
+                    <button id="start-pause-btn">Start</button>
+                    <button id="reset-btn">Reset</button>
+                 </div>
+                <p class="timer-message" id="timer-message">Ready to focus?</p>
+            </section>
+
+            <!-- To-Do List Section -->
+            <section class="card todo-section">
+                <h2>My Tasks</h2>
+                <form id="add-task-form" class="add-task-form">
+                    <input type="text" id="new-task-input" placeholder="Add a new task..." required>
+                    <select id="new-task-priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                    <button type="submit">Add Task</button>
+                </form>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+                <ul id="task-list">
+                    <!-- Tasks will be loaded here -->
+                </ul>
+                 <p class="no-tasks-message hidden" id="no-tasks-message">No tasks yet. Add one above!</p>
+            </section>
+
+            <!-- Stats and Progress Section -->
+            <section class="card stats-section">
+                <h2>Progress & Stats</h2>
+                <div class="stats-area">
+                    <div class="stat-item">
+                        <span class="stat-label">Tasks Completed Today:</span>
+                        <span class="stat-value" id="tasks-completed-today">0</span>
+                    </div>
+                     <div class="stat-item">
+                         <span class="stat-label">Task Progress:</span>
+                         <span class="stat-value" id="task-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="task-progress-bar"></div>
+                    </div>
+                     <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1rem 0;">
+                    <div class="stat-item">
+                        <span class="stat-label">Pomodoros Today:</span>
+                        <span class="stat-value" id="pomodoros-today">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Focus Time Today:</span>
+                        <span class="stat-value" id="total-focus-time">0m</span>
+                    </div>
+                     <div class="pomodoro-batches" id="pomodoro-batches">
+                         <!-- Batch icons like 🔴🔴🔴🟢 will appear here -->
+                     </div>
+                      <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1rem 0;">
+                    <div class="stat-item">
+                        <span class="stat-label">Daily Streak:</span>
+                        <span class="stat-value" id="daily-streak">🔥 0 days</span>
+                    </div>
+                     <div class="stat-item">
+                        <span class="stat-label">Weekly Streak:</span>
+                        <span class="stat-value" id="weekly-streak">🏆 0 weeks</span>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+    </div> <!-- End Container -->
+
+    <!-- Settings Panel (Modal) -->
+    <div class="settings-overlay" id="settings-overlay">
+        <div class="settings-panel">
+            <button class="settings-close-btn" id="settings-close-btn" aria-label="Close Settings">&times;</button>
+            <h2>Settings</h2>
+
+            <div class="settings-section">
+                <h3>General</h3>
+                 <label for="username-input">Your Name:</label>
+                 <input type="text" id="username-input" placeholder="Enter your name">
+            </div>
+
+            <div class="settings-section">
+                <h3>Timer Durations (minutes)</h3>
+                <label for="pomodoro-duration">Pomodoro:</label>
+                <input type="number" id="pomodoro-duration" min="1" max="90">
+                <label for="short-break-duration">Short Break:</label>
+                <input type="number" id="short-break-duration" min="1" max="30">
+                <label for="long-break-duration">Long Break:</label>
+                <input type="number" id="long-break-duration" min="1" max="60">
+            </div>
+
+            <div class="settings-section">
+                <h3>Sounds</h3>
+                <div class="sound-toggles">
+                    <label>
+                        <span>UI Click Sounds</span>
+                        <input type="checkbox" id="toggle-ui-sounds">
+                    </label>
+                    <label>
+                        <span>Timer Alerts</span>
+                        <input type="checkbox" id="toggle-timer-alerts">
+                    </label>
+                 </div>
+                 <label for="background-sound-select" class="mt-1">Background Ambience:</label>
+                 <select id="background-sound-select">
+                     <option value="none">None</option>
+                     <option value="focus">Focus Music</option>
+                     <option value="rain">Rain</option>
+                     <option value="cafe">Cafe</option>
+                 </select>
+            </div>
+
+            <div class="settings-section">
+                <h3>Data</h3>
+                <button id="save-settings-btn" class="success">Save Settings</button>
+                <button id="reset-data-btn" class="danger mt-1">Reset All Data</button>
+                <p class="mt-1"><small>Resetting will clear all tasks, stats, and settings.</small></p>
+            </div>
         </div>
-        <button class="copy-button" onclick="copyPoints()" disabled>Copy Points</button>
     </div>
 
+    <!-- General Purpose Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Modal Title</h3>
+            <p id="modal-message">Modal message goes here.</p>
+            <div> <!-- Wrap buttons for better spacing control if needed -->
+                 <button id="modal-confirm-btn" class="secondary hidden">Confirm</button>
+                 <button id="modal-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+     <!-- Daily Summary Modal -->
+    <div class="modal-overlay" id="daily-summary-overlay">
+        <div class="modal-content">
+            <h3>Daily Summary</h3>
+            <p>Here's how you did yesterday:</p>
+            <ul style="text-align: left; list-style: inside; margin-bottom: 1rem;">
+                <li id="summary-completed">Completed: 0 tasks</li>
+                <li id="summary-missed">Missed: 0 tasks</li>
+                <li id="summary-streak">Streak: Maintained / Broken</li>
+            </ul>
+            <button id="daily-summary-close-btn">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    <!-- Audio Elements -->
+    <audio id="audio-task-complete" src="https://cdn.jsdelivr.net/gh/koolkishan/audiomass/audios/positive.mp3" preload="auto"></audio>
+    <audio id="audio-timer-end" src="https://cdn.jsdelivr.net/gh/koolkishan/audiomass/audios/notification-alert-bells.mp3" preload="auto"></audio>
+    <audio id="audio-button-click" src="https://cdn.jsdelivr.net/gh/koolkishan/audiomass/audios/button-press.mp3" preload="auto"></audio>
+    <audio id="audio-bg-focus" src="https://cdn.jsdelivr.net/gh/koolkishan/audiomass/audios/ambient-piano-loop.mp3" loop preload="metadata"></audio>
+    <audio id="audio-bg-rain" src="https://cdn.jsdelivr.net/gh/koolkishan/audiomass/audios/light-rain.mp3" loop preload="metadata"></audio>
+    <audio id="audio-bg-cafe" src="https://cdn.jsdelivr.net/gh/koolkishan/audiomass/audios/coffeeshop-ambience.mp3" loop preload="metadata"></audio>
+
+
+    <!-- JavaScript (Internal Script) -->
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const bgCanvas = document.getElementById('backgroundCanvas');
-        const bgCtx = bgCanvas.getContext('2d');
-        const imageInput = document.getElementById('imageInput');
-        const pointsList = document.getElementById('pointsList');
-        const errorDiv = document.getElementById('error');
-        const copyButton = document.querySelector('.copy-button');
+        document.addEventListener('DOMContentLoaded', () => {
 
-        let points = [];
-        let img = null;
-        let xUnit = 1;
-        let yUnit = 1;
-        let animations = [];
-        let particles = [];
-        let coordinateSystems = [];
+            // --- DOM Element Selectors (Cached) ---
+            const body = document.body;
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsOverlay = document.getElementById('settings-overlay');
+            const settingsPanel = document.querySelector('.settings-panel');
+            const settingsCloseBtn = document.getElementById('settings-close-btn');
+            const saveSettingsBtn = document.getElementById('save-settings-btn');
+            const resetDataBtn = document.getElementById('reset-data-btn');
+            const usernameDisplay = document.querySelector('.username-display');
+            const usernameInput = document.getElementById('username-input');
 
-        // Resize background canvas to window
-        bgCanvas.width = window.innerWidth;
-        bgCanvas.height = window.innerHeight;
-        window.addEventListener('resize', () => {
-            bgCanvas.width = window.innerWidth;
-            bgCanvas.height = window.innerHeight;
-        });
+            const pomodoroDurationInput = document.getElementById('pomodoro-duration');
+            const shortBreakDurationInput = document.getElementById('short-break-duration');
+            const longBreakDurationInput = document.getElementById('long-break-duration');
 
-        // Particle for background animation
-        class Particle {
-            constructor() {
-                this.x = Math.random() * bgCanvas.width;
-                this.y = Math.random() * bgCanvas.height;
-                this.size = Math.random() * 5 + 2;
-                this.speedX = Math.random() * 2 - 1;
-                this.speedY = Math.random() * 2 - 1;
-                this.color = `hsl(${Math.random() * 360}, 50%, 70%)`;
-            }
+            const toggleUiSounds = document.getElementById('toggle-ui-sounds');
+            const toggleTimerAlerts = document.getElementById('toggle-timer-alerts');
+            const backgroundSoundSelect = document.getElementById('background-sound-select');
 
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x < 0 || this.x > bgCanvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > bgCanvas.height) this.speedY *= -1;
-            }
+            const newTaskInput = document.getElementById('new-task-input');
+            const newTaskPriority = document.getElementById('new-task-priority');
+            const addTaskForm = document.getElementById('add-task-form');
+            const taskList = document.getElementById('task-list');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const noTasksMessage = document.getElementById('no-tasks-message');
 
-            draw() {
-                bgCtx.fillStyle = this.color;
-                bgCtx.beginPath();
-                bgCtx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-                bgCtx.fill();
-            }
-        }
+            const timerModesBtns = document.querySelectorAll('.timer-modes button');
+            const timerDisplay = document.getElementById('timer-display');
+            const timerModeLabel = document.getElementById('timer-mode-label');
+            const progressCircle = document.querySelector('.progress-circle');
+            const startPauseBtn = document.getElementById('start-pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const timerMessage = document.getElementById('timer-message');
+            const customTimerInputArea = document.getElementById('custom-timer-input-area');
+            const customMinutesInput = document.getElementById('custom-minutes');
 
-        // Coordinate system animation
-        class CoordinateSystem {
-            constructor() {
-                this.x = Math.random() * bgCanvas.width;
-                this.y = Math.random() * bgCanvas.height;
-                this.size = Math.random() * 50 + 30;
-                this.angle = 0;
-                this.speed = Math.random() * 0.02 + 0.01;
-                this.opacity = Math.random() * 0.3 + 0.2;
-            }
+            const tasksCompletedTodayDisplay = document.getElementById('tasks-completed-today');
+            const taskProgressBar = document.getElementById('task-progress-bar');
+            const taskProgressPercentDisplay = document.getElementById('task-progress-percent');
+            const pomodorosTodayDisplay = document.getElementById('pomodoros-today');
+            const totalFocusTimeDisplay = document.getElementById('total-focus-time');
+            const pomodoroBatchesDisplay = document.getElementById('pomodoro-batches');
+            const dailyStreakDisplay = document.getElementById('daily-streak');
+            const weeklyStreakDisplay = document.getElementById('weekly-streak');
 
-            update() {
-                this.angle += this.speed;
-                this.y += Math.sin(this.angle) * 0.5;
-            }
+            const modalOverlay = document.getElementById('modal-overlay');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
 
-            draw() {
-                bgCtx.save();
-                bgCtx.globalAlpha = this.opacity;
-                bgCtx.translate(this.x, this.y);
-                bgCtx.rotate(this.angle);
+            const dailySummaryOverlay = document.getElementById('daily-summary-overlay');
+            const dailySummaryCloseBtn = document.getElementById('daily-summary-close-btn');
+            const summaryCompleted = document.getElementById('summary-completed');
+            const summaryMissed = document.getElementById('summary-missed');
+            const summaryStreak = document.getElementById('summary-streak');
 
-                // Draw axes
-                bgCtx.strokeStyle = '#ffffff';
-                bgCtx.lineWidth = 2;
-                bgCtx.beginPath();
-                bgCtx.moveTo(-this.size, 0);
-                bgCtx.lineTo(this.size, 0);
-                bgCtx.moveTo(0, -this.size);
-                bgCtx.lineTo(0, this.size);
-                bgCtx.stroke();
+            const confettiContainer = document.getElementById('confetti-container');
+            const quoteCarousel = document.getElementById('quote-carousel');
+            const quoteElements = quoteCarousel.querySelectorAll('.quote');
 
-                // Draw arrowheads
-                bgCtx.fillStyle = '#ffffff';
-                bgCtx.beginPath();
-                bgCtx.moveTo(this.size, 0);
-                bgCtx.lineTo(this.size - 10, 5);
-                bgCtx.lineTo(this.size - 10, -5);
-                bgCtx.fill();
-                bgCtx.beginPath();
-                bgCtx.moveTo(0, this.size);
-                bgCtx.lineTo(5, this.size - 10);
-                bgCtx.lineTo(-5, this.size - 10);
-                bgCtx.fill();
+            const audioTaskComplete = document.getElementById('audio-task-complete');
+            const audioTimerEnd = document.getElementById('audio-timer-end');
+            const audioButtonClick = document.getElementById('audio-button-click');
+            const audioBgFocus = document.getElementById('audio-bg-focus');
+            const audioBgRain = document.getElementById('audio-bg-rain');
+            const audioBgCafe = document.getElementById('audio-bg-cafe');
+            const backgroundAudios = {
+                focus: audioBgFocus,
+                rain: audioBgRain,
+                cafe: audioBgCafe,
+            };
+            let currentBgAudio = null;
 
-                bgCtx.restore();
-            }
-        }
+            // --- State Variables ---
+            let tasks = [];
+            let settings = {}; // Loaded in init
+            let stats = {}; // Loaded in init
+            let currentFilter = 'all';
+            let timerInterval = null;
+            let timerState = {
+                mode: 'pomodoro', running: false, timeLeft: 0, totalTime: 0, stopwatchTime: 0,
+            };
+            let pomodoroCycleCount = 0; // Tracks pomodoros today
+            let draggedItem = null;
+            let quoteInterval = null; // Interval timer for quote rotation
+            let currentQuoteIndex = 0;
 
-        // Point animation on main canvas
-        class PointAnimation {
-            constructor(x, y, startTime) {
-                this.x = x;
-                this.y = y;
-                this.startTime = startTime;
-                this.duration = 1000;
-            }
+             // --- Default Settings --- (Used if nothing in localStorage)
+             const defaultSettings = {
+                 theme: 'light',
+                 username: 'User',
+                 pomodoroDuration: 25,
+                 shortBreakDuration: 5,
+                 longBreakDuration: 15,
+                 soundUI: true,
+                 soundAlerts: true,
+                 soundBackground: 'none',
+             };
 
-            draw(currentTime) {
-                const elapsed = currentTime - this.startTime;
-                if (elapsed > this.duration) return false;
+             // --- Default Stats --- (Used if nothing in localStorage)
+             const defaultStats = {
+                 lastVisitDate: null,
+                 tasksCompletedToday: 0,
+                 pomodorosToday: 0,
+                 totalFocusTimeToday: 0, // in minutes
+                 dailyStreak: 0,
+                 lastCompletedDate: null, // For daily streak
+                 weeklyStreak: 0,
+                 lastCompletedWeek: null, // For weekly streak (e.g., YYYY-WW)
+                 pomodoroHistory: [], // Array of 'P', 'S', 'L' for batches today
+                 dailySummary: null // Store summary if needed across refresh
+             };
 
-                const scale = 1 + 0.5 * Math.sin((elapsed / this.duration) * Math.PI);
-                ctx.save();
-                ctx.fillStyle = `rgba(255, 0, 0, ${1 - elapsed / this.duration})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 3 * scale, 0, 2 * Math.PI);
-                ctx.fill();
+            // --- Motivational Quotes & Messages (Keep as before) ---
+             const motivationalQuotes = quoteElements.length > 0 ? Array.from(quoteElements).map(q => q.textContent) : [
+                "The secret of getting ahead is getting started. - Mark Twain",
+                "Focus on being productive instead of busy. - Tim Ferriss",
+                "The key is not to prioritize what's on your schedule, but to schedule your priorities. - Stephen Covey",
+                "Well done is better than well said. - Benjamin Franklin",
+                "Believe you can and you're halfway there. - Theodore Roosevelt",
+             ]; // Fallback if querySelector fails
+             const timerFocusMessages = ["Stay focused, you got this!", "Deep work in progress...", "One step at a time.", "Keep pushing!", "Zone in!", "Concentrate and conquer.", "Making progress!"];
+             const timerBreakMessages = ["Time for a breather.", "Stretch and relax.", "Step away and recharge.", "Nice work, enjoy the break!", "Rest your eyes.", "Hydrate and refresh."];
+             const completionMessages = ["Awesome!", "Great job!", "You did it!", "Fantastic!", "Well done!", "Keep it up!", "Amazing!", "Superstar!"];
 
-                // Ripple effect
-                const rippleRadius = (elapsed / this.duration) * 20;
-                ctx.strokeStyle = `rgba(255, 0, 0, ${0.5 - elapsed / this.duration * 0.5})`;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, rippleRadius, 0, 2 * Math.PI);
-                ctx.stroke();
-                ctx.restore();
-                return true;
-            }
-        }
+            // --- LocalStorage Manager (Keep as before) ---
+            const storageManager = {
+                saveTasks: () => localStorage.setItem('taskmaster_tasks', JSON.stringify(tasks)),
+                loadTasks: () => JSON.parse(localStorage.getItem('taskmaster_tasks')) || [],
+                saveSettings: () => localStorage.setItem('taskmaster_settings', JSON.stringify(settings)),
+                loadSettings: () => ({ ...defaultSettings, ...JSON.parse(localStorage.getItem('taskmaster_settings')) }),
+                saveStats: () => localStorage.setItem('taskmaster_stats', JSON.stringify(stats)),
+                loadStats: () => ({ ...defaultStats, ...JSON.parse(localStorage.getItem('taskmaster_stats')) }),
+                clearAll: () => {
+                    localStorage.removeItem('taskmaster_tasks');
+                    localStorage.removeItem('taskmaster_settings');
+                    localStorage.removeItem('taskmaster_stats');
+                }
+            };
 
-        // Initialize particles and coordinate systems
-        for (let i = 0; i < 50; i++) {
-            particles.push(new Particle());
-        }
-        for (let i = 0; i < 5; i++) {
-            coordinateSystems.push(new CoordinateSystem());
-        }
+            // --- Sound Manager (Keep as before, check for null elements) ---
+            const soundManager = {
+                play: (audioElement) => {
+                    if (!audioElement) return; // Check if element exists
+                    try {
+                        audioElement.currentTime = 0;
+                        audioElement.play().catch(e => console.warn("Audio play failed:", e));
+                    } catch (error) { console.warn("Could not play audio:", error); }
+                },
+                playTaskComplete: () => { if (settings.soundUI) soundManager.play(audioTaskComplete); },
+                playTimerEnd: () => { if (settings.soundAlerts) soundManager.play(audioTimerEnd); },
+                playButtonClick: () => { if (settings.soundUI) soundManager.play(audioButtonClick); },
+                playBackground: (soundKey) => {
+                    soundManager.stopBackground();
+                    if (soundKey !== 'none' && backgroundAudios[soundKey]) {
+                        currentBgAudio = backgroundAudios[soundKey];
+                        currentBgAudio.volume = 0.3;
+                        soundManager.play(currentBgAudio);
+                    } else { currentBgAudio = null; }
+                    if (settings.soundBackground !== soundKey) { // Avoid unnecessary save if already set
+                       settings.soundBackground = soundKey;
+                       storageManager.saveSettings();
+                    }
+                },
+                stopBackground: () => { if (currentBgAudio) { currentBgAudio.pause(); currentBgAudio.currentTime = 0; currentBgAudio = null; } },
+                updateMuteStates: () => {
+                    if (audioTaskComplete) audioTaskComplete.muted = !settings.soundUI;
+                    if (audioButtonClick) audioButtonClick.muted = !settings.soundUI;
+                    if (audioTimerEnd) audioTimerEnd.muted = !settings.soundAlerts;
+                },
+                setBackgroundSoundFromSettings: () => {
+                    if (backgroundSoundSelect) backgroundSoundSelect.value = settings.soundBackground;
+                    soundManager.playBackground(settings.soundBackground); // Start playing if not 'none'
+                }
+            };
 
-        function setupCanvas() {
-            errorDiv.textContent = '';
-            const width = parseInt(document.getElementById('canvasWidth').value);
-            const height = parseInt(document.getElementById('canvasHeight').value);
-            xUnit = parseInt(document.getElementById('xUnit').value);
-            yUnit = parseInt(document.getElementById('yUnit').value);
+            // --- UI Manager ---
+            const uiManager = {
+                applyTheme: (theme) => {
+                    body.classList.toggle('dark-mode', theme === 'dark');
+                    if (themeToggleBtn) themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+                },
+                updateUsernameDisplay: () => {
+                    if (usernameDisplay) usernameDisplay.textContent = `Hi ${settings.username}! Ready to conquer today?`;
+                },
+                 startQuoteCarousel: () => {
+                     if (quoteInterval) clearInterval(quoteInterval); // Clear existing interval if any
+                     if (quoteElements.length === 0) return; // No quotes found
 
-            if (!width || !height || !xUnit || !yUnit || width < 100 || height < 100 || xUnit < 1 || yUnit < 1) {
-                errorDiv.textContent = 'Please provide valid canvas dimensions (min 100px) and unit values (min 1).';
-                return;
-            }
+                     const showQuote = (index) => {
+                         quoteElements.forEach((quote, i) => {
+                             quote.classList.toggle('active', i === index);
+                         });
+                     };
 
-            canvas.width = width;
-            canvas.height = height;
-            points = [];
-            animations = [];
-            updatePointsList();
-            copyButton.disabled = true;
+                     showQuote(currentQuoteIndex); // Show initial quote
 
-            if (imageInput.files.length > 0) {
-                img = new Image();
-                img.onload = () => {
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    animate(); // Start animation loop after image loads
-                };
-                img.src = URL.createObjectURL(imageInput.files[0]);
-            } else {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                animate(); // Start animation loop for non-image case
-            }
-        }
+                     quoteInterval = setInterval(() => {
+                         currentQuoteIndex = (currentQuoteIndex + 1) % quoteElements.length;
+                         showQuote(currentQuoteIndex);
+                     }, 8000); // Change quote every 8 seconds
+                 },
+                renderTasks: () => {
+                    if (!taskList) return;
+                    taskList.innerHTML = ''; // Clear list
+                    const filteredTasks = tasks.filter(task => {
+                        if (currentFilter === 'all') return true;
+                        if (currentFilter === 'completed') return task.completed;
+                        if (currentFilter === 'pending') return !task.completed;
+                        return true;
+                    });
 
-        canvas.addEventListener('click', (e) => {
-            if (!canvas.width || !canvas.height) return;
+                    if (tasks.length === 0) {
+                        if (noTasksMessage) noTasksMessage.classList.remove('hidden');
+                    } else {
+                        if (noTasksMessage) noTasksMessage.classList.add('hidden');
+                         if (filteredTasks.length === 0 && currentFilter !== 'all') { // Only show if filtering results in empty
+                             const li = document.createElement('li');
+                             li.textContent = `No ${currentFilter} tasks found.`;
+                             li.style.textAlign = 'center';
+                             li.style.color = 'var(--subtle-text)';
+                              li.style.marginTop = '1rem';
+                             taskList.appendChild(li);
+                         }
+                    }
 
-            const rect = canvas.getBoundingClientRect();
-            // Calculate scale factors for CSS vs. canvas resolution
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            // Adjust click coordinates to match canvas resolution
-            const pixelX = (e.clientX - rect.left) * scaleX;
-            const pixelY = (e.clientY - rect.top) * scaleY;
+                    filteredTasks.forEach(task => {
+                        const li = document.createElement('li');
+                        li.className = `task-item ${task.completed ? 'completed' : 'pending'} priority-${task.priority}`;
+                        li.dataset.id = task.id;
+                        li.draggable = true;
 
-            // Convert pixel coordinates to unit coordinates for storage
-            const unitX = pixelX / xUnit;
-            const unitY = (canvas.height - pixelY) / yUnit;
+                        li.innerHTML = `
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} aria-label="Mark task as ${task.completed ? 'pending' : 'complete'}">
+                            <span class="task-text">${task.text}</span>
+                            <input type="text" class="edit-input" value="${task.text}" style="display: none;" aria-label="Edit task text">
+                             <div class="task-actions">
+                                <button class="edit-btn" aria-label="Edit task">✏️</button>
+                                <button class="delete-btn" aria-label="Delete task">🗑️</button>
+                                 <button class="save-btn" style="display: none;" aria-label="Save changes">💾</button>
+                             </div>
+                        `;
+                        // Add slight delay for stagger effect if desired (optional)
+                        // li.style.animationDelay = `${index * 0.05}s`;
+                        taskList.appendChild(li);
+                    });
+                     uiManager.updateStats();
+                     // uiManager.checkWiggle(); // Consider if wiggle is desired
+                },
+                updateFilterButtons: () => {
+                    filterBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+                    });
+                },
+                updateTimerDisplay: () => {
+                     if (!timerDisplay || !progressCircle || !timerModeLabel) return;
+                    let minutes, seconds, displayString, progressPercent = 0;
 
-            // Store the point with both unit and pixel coordinates
-            points.push({ x: unitX.toFixed(3), y: unitY.toFixed(3), pixelX, pixelY });
-            animations.push(new PointAnimation(pixelX, pixelY, performance.now()));
-            updatePointsList();
-        });
+                    if (timerState.mode === 'stopwatch') {
+                        minutes = Math.floor(timerState.stopwatchTime / 60);
+                        seconds = timerState.stopwatchTime % 60;
+                        displayString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                        progressPercent = 100; // Keep circle full for stopwatch
+                        timerModeLabel.textContent = "Stopwatch";
+                        uiManager.setCircleColor('stopwatch');
+                    } else {
+                        minutes = Math.floor(timerState.timeLeft / 60);
+                        seconds = timerState.timeLeft % 60;
+                        displayString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                        progressPercent = timerState.totalTime > 0 ? ((timerState.totalTime - timerState.timeLeft) / timerState.totalTime) * 100 : 0;
 
-        function updatePointsList() {
-            pointsList.innerHTML = '<h3>Points (x, y):</h3>';
-            if (points.length === 0) {
-                pointsList.innerHTML += '<p>No points selected.</p>';
-                return;
-            }
+                        let durationLabel = '';
+                        switch (timerState.mode) {
+                             case 'pomodoro': durationLabel = `Pomodoro (${settings.pomodoroDuration}m)`; break;
+                             case 'shortBreak': durationLabel = `Short Break (${settings.shortBreakDuration}m)`; break;
+                             case 'longBreak': durationLabel = `Long Break (${settings.longBreakDuration}m)`; break;
+                             case 'custom': durationLabel = `Custom (${customMinutesInput ? customMinutesInput.value : '?'}m)`; break;
+                             default: durationLabel = 'Timer';
+                         }
+                        timerModeLabel.textContent = durationLabel;
+                        uiManager.setCircleColor(timerState.mode);
+                    }
 
-            const ul = document.createElement('ul');
-            points.forEach((point, index) => {
-                const li = document.createElement('li');
-                li.textContent = `${index + 1}: (${point.x}, ${point.y})`;
-                li.style.animation = `slideIn 0.3s ease ${index * 0.1}s both`;
-                ul.appendChild(li);
-            });
-            pointsList.appendChild(ul);
-            copyButton.disabled = false;
-        }
+                    timerDisplay.textContent = displayString;
+                     // CSS Houdini / @property would be better, but for single file use direct style
+                    progressCircle.style.strokeDasharray = 100; // Set explicitly
+                    progressCircle.style.strokeDashoffset = 100 - progressPercent;
 
-        function copyPoints() {
-            const glFormat = points.map(p => `glVertex2f(${p.x}f, ${p.y}f);`).join('\n');
-            navigator.clipboard.writeText(glFormat).then(() => {
-                copyButton.textContent = 'Copied!';
-                copyButton.style.background = '#28a745';
-                setTimeout(() => {
-                    copyButton.textContent = 'Copy Points';
-                    copyButton.style.background = '#007bff';
-                }, 1000);
-            }).catch(err => {
-                errorDiv.textContent = 'Failed to copy points: ' + err;
-            });
-        }
+                    if (timerState.running) {
+                        document.title = `${displayString} - ${timerModeLabel.textContent} | TaskMaster`;
+                    } else {
+                        document.title = '✔️ TaskMaster | Your Focus Hub';
+                    }
+                },
+                 setCircleColor: (mode) => {
+                    if (!progressCircle) return;
+                    let colorVar;
+                    switch (mode) {
+                        case 'pomodoro': colorVar = 'var(--timer-pomodoro)'; break;
+                        case 'shortBreak': colorVar = 'var(--timer-short-break)'; break;
+                        case 'longBreak': colorVar = 'var(--timer-long-break)'; break;
+                        case 'custom': colorVar = 'var(--timer-custom)'; break;
+                        case 'stopwatch': colorVar = 'var(--timer-stopwatch)'; break;
+                        default: colorVar = 'var(--accent-color)';
+                    }
+                    progressCircle.style.stroke = colorVar;
+                 },
+                 updateTimerButtons: () => {
+                    if (!startPauseBtn || !resetBtn) return;
+                    startPauseBtn.textContent = timerState.running ? 'Pause' : 'Start';
+                     const isAtInitialState = (timerState.mode !== 'stopwatch' && timerState.timeLeft === timerState.totalTime) || (timerState.mode === 'stopwatch' && timerState.stopwatchTime === 0);
+                     resetBtn.disabled = !timerState.running && isAtInitialState;
+                },
+                 updateTimerMessage: (message = "") => {
+                     if (timerMessage) timerMessage.textContent = message;
+                 },
+                updateStats: () => {
+                    const completedTasks = tasks.filter(t => t.completed);
+                    const totalTasks = tasks.length;
+                    const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
-        function animate() {
-            // Background animation
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            coordinateSystems.forEach(cs => {
-                cs.update();
-                cs.draw();
-            });
+                    if (tasksCompletedTodayDisplay) tasksCompletedTodayDisplay.textContent = stats.tasksCompletedToday;
+                    if (taskProgressBar) {
+                         taskProgressBar.style.width = `${completionPercentage}%`;
+                         taskProgressBar.textContent = totalTasks > 0 ? `${completionPercentage}%` : '';
+                    }
+                    if (taskProgressPercentDisplay) taskProgressPercentDisplay.textContent = `${completionPercentage}%`;
+                    if (pomodorosTodayDisplay) pomodorosTodayDisplay.textContent = stats.pomodorosToday;
+                    if (totalFocusTimeDisplay) totalFocusTimeDisplay.textContent = `${stats.totalFocusTimeToday}m`;
+                    if (dailyStreakDisplay) dailyStreakDisplay.textContent = `🔥 ${stats.dailyStreak} day${stats.dailyStreak !== 1 ? 's' : ''}`;
+                    if (weeklyStreakDisplay) weeklyStreakDisplay.textContent = `🏆 ${stats.weeklyStreak} week${stats.weeklyStreak !== 1 ? 's' : ''}`;
+                    uiManager.renderPomodoroBatches();
+                },
+                 renderPomodoroBatches: () => {
+                     if (!pomodoroBatchesDisplay) return;
+                     pomodoroBatchesDisplay.innerHTML = stats.pomodoroHistory.map(type => {
+                         switch(type) {
+                             case 'P': return '🔴'; case 'S': return '🟢'; case 'L': return '🔵'; default: return '';
+                         }
+                     }).join('<span> </span>');
+                 },
+                showModal: (title, message, showConfirm = false, confirmCallback = null, confirmText = 'Confirm', closeText = 'Close') => {
+                    if (!modalOverlay || !modalTitle || !modalMessage || !modalConfirmBtn || !modalCloseBtn) return;
+                    modalTitle.textContent = title;
+                    modalMessage.innerHTML = message;
+                    modalConfirmBtn.textContent = confirmText;
+                    modalCloseBtn.textContent = closeText;
+                    modalConfirmBtn.classList.toggle('hidden', !showConfirm);
+                    modalOverlay.classList.add('visible');
+                     // Ensure focus management (optional but good for accessibility)
+                     modalCloseBtn.focus();
 
-            // Main canvas animation
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (img) {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            } else {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
+                     // Assign click handlers
+                     modalConfirmBtn.onclick = () => {
+                         soundManager.playButtonClick();
+                         if (confirmCallback) confirmCallback();
+                         uiManager.hideModal();
+                     };
+                     modalCloseBtn.onclick = () => { // Ensure close button always works
+                         soundManager.playButtonClick();
+                         uiManager.hideModal();
+                     };
+                },
+                hideModal: () => {
+                     if (modalOverlay) modalOverlay.classList.remove('visible');
+                     // Remove handlers to prevent potential memory leaks if callbacks hold closures
+                     if (modalConfirmBtn) modalConfirmBtn.onclick = null;
+                      if (modalCloseBtn) modalCloseBtn.onclick = null;
+                 },
+                showSettings: () => {
+                    if (!settingsOverlay || !usernameInput || !pomodoroDurationInput || !shortBreakDurationInput || !longBreakDurationInput || !toggleUiSounds || !toggleTimerAlerts || !backgroundSoundSelect) return;
+                    usernameInput.value = settings.username;
+                    pomodoroDurationInput.value = settings.pomodoroDuration;
+                    shortBreakDurationInput.value = settings.shortBreakDuration;
+                    longBreakDurationInput.value = settings.longBreakDuration;
+                    toggleUiSounds.checked = settings.soundUI;
+                    toggleTimerAlerts.checked = settings.soundAlerts;
+                    backgroundSoundSelect.value = settings.soundBackground;
+                    settingsOverlay.classList.add('visible');
+                     if(settingsCloseBtn) settingsCloseBtn.focus();
+                 },
+                 hideSettings: () => { if (settingsOverlay) settingsOverlay.classList.remove('visible'); },
+                 triggerConfetti: () => {
+                     if (!confettiContainer) return;
+                     confettiContainer.innerHTML = '';
+                     const colors = ['#ff6b6b', '#f06595', '#cc5de8', '#845ef7', '#5c7cfa', '#339af0', '#22b8cf', '#20c997', '#51cf66', '#94d82d', '#fcc419', '#ff922b'];
+                     for (let i = 0; i < 80; i++) { // Reduced count slightly
+                         const confetti = document.createElement('div');
+                         confetti.classList.add('confetti');
+                         confetti.style.left = `${Math.random() * 100}vw`;
+                         confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                         confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                         confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                         confetti.style.height = `${Math.random() * 15 + 5}px`;
+                         confetti.style.width = `${Math.random() * 8 + 4}px`;
+                         confettiContainer.appendChild(confetti);
+                     }
+                     setTimeout(() => { if (confettiContainer) confettiContainer.innerHTML = ''; }, 3000);
+                 },
+                 showDailySummary: (summaryData) => {
+                     if (!summaryData || !dailySummaryOverlay || !summaryCompleted || !summaryMissed || !summaryStreak) return;
+                     summaryCompleted.textContent = `Completed: ${summaryData.completed} tasks`;
+                     summaryMissed.textContent = `Missed: ${summaryData.missed} tasks`;
+                     summaryStreak.textContent = `Streak: ${summaryData.streakMaintained ? 'Maintained! 🔥' : 'Broken 😔'}`;
+                     dailySummaryOverlay.classList.add('visible');
+                     if (dailySummaryCloseBtn) dailySummaryCloseBtn.focus();
+                 },
+                 hideDailySummary: () => { if (dailySummaryOverlay) dailySummaryOverlay.classList.remove('visible'); },
+                 /* // Wiggle animation removed for now, can be added back if desired
+                 checkWiggle: () => {
+                     // ... wiggle logic ...
+                 },
+                 */
+                 showPositiveReinforcement: () => {
+                    const completedCount = stats.tasksCompletedToday;
+                    if (completedCount > 0 && completedCount % 3 === 0) {
+                        const message = `You've completed ${completedCount} tasks today! ${completionMessages[Math.floor(Math.random() * completionMessages.length)]} 🎉`;
+                        uiManager.showModal("Keep Going!", message);
+                        uiManager.triggerConfetti();
+                    }
+                 },
+                 getRandomQuote: () => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)],
+                 showRandomQuoteModal: () => {
+                     uiManager.showModal("Motivation Boost!", uiManager.getRandomQuote(), false, null, '', 'Got it!');
+                 }
+            };
 
-            const currentTime = performance.now();
-            animations = animations.filter(anim => anim.draw(currentTime));
+            // --- Task Manager ---
+            const taskManager = {
+                addTask: (text, priority) => {
+                    if (!text.trim() || !newTaskInput) return;
+                    const newTask = { id: Date.now().toString(), text: text.trim(), priority: priority, completed: false, createdAt: new Date().toISOString() };
+                    tasks.unshift(newTask); // Add to the beginning of the array
+                    storageManager.saveTasks();
+                    uiManager.renderTasks();
+                    newTaskInput.value = '';
+                    if (newTaskPriority) newTaskPriority.value = 'medium';
+                    soundManager.playButtonClick();
+                    uiManager.showRandomQuoteModal();
+                },
+                toggleComplete: (id) => {
+                    let taskCompleted = false;
+                    tasks = tasks.map(task => {
+                        if (task.id === id) {
+                            const wasCompleted = task.completed;
+                            task.completed = !task.completed;
+                            if (task.completed && !wasCompleted) {
+                                stats.tasksCompletedToday += 1;
+                                taskCompleted = true;
+                            } else if (!task.completed && wasCompleted && stats.tasksCompletedToday > 0) {
+                                stats.tasksCompletedToday -= 1;
+                            }
+                        }
+                        return task;
+                    });
+                    storageManager.saveTasks();
+                    statsManager.updateDailyCompletion();
+                    uiManager.renderTasks(); // Re-render the list
+                     if (taskCompleted) {
+                        uiManager.triggerConfetti();
+                        soundManager.playTaskComplete();
+                        uiManager.showPositiveReinforcement();
+                     }
+                },
+                deleteTask: (id) => {
+                    tasks = tasks.filter(task => task.id !== id);
+                    storageManager.saveTasks();
+                    uiManager.renderTasks();
+                    soundManager.playButtonClick();
+                },
+                editTask: (id, newText) => {
+                     if (!newText.trim()) return;
+                    tasks = tasks.map(task => {
+                        if (task.id === id) { task.text = newText.trim(); }
+                        return task;
+                    });
+                    storageManager.saveTasks();
+                    uiManager.renderTasks();
+                    soundManager.playButtonClick();
+                },
+                 reorderTasks: (draggedId, targetId) => {
+                    const draggedIndex = tasks.findIndex(task => task.id === draggedId);
+                    let targetIndex = tasks.findIndex(task => task.id === targetId);
 
-            // Draw all stored points using their pixel coordinates
-            points.forEach(p => {
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(p.pixelX, p.pixelY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-            });
+                    if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) return;
 
-            requestAnimationFrame(animate);
-        }
+                    const [draggedTask] = tasks.splice(draggedIndex, 1);
 
-        // Start animation loop
-        animate();
+                    // If dragging down, the target index remains the same *after* removal
+                    // If dragging up, the target index needs no adjustment relative to insertion point
+                    tasks.splice(targetIndex, 0, draggedTask);
+
+                    storageManager.saveTasks();
+                    uiManager.renderTasks(); // Re-render with new order (animates all)
+                 }
+            };
+
+            // --- Timer Manager ---
+            const timerManager = {
+                startPause: () => {
+                    soundManager.playButtonClick();
+                    if (timerState.running) { timerManager.pause(); }
+                    else { timerManager.start(); }
+                },
+                start: () => {
+                    if (timerState.running) return;
+
+                    // Ensure audio context is available (required by some browsers)
+                    soundManager.play(audioButtonClick);
+
+                    timerState.running = true;
+                    uiManager.updateTimerButtons();
+                    const messagePool = (timerState.mode === 'pomodoro' || timerState.mode === 'custom') ? timerFocusMessages : timerBreakMessages;
+                    uiManager.updateTimerMessage(messagePool[Math.floor(Math.random() * messagePool.length)]);
+
+                    if (timerState.mode === 'stopwatch') {
+                        timerInterval = setInterval(() => {
+                            timerState.stopwatchTime++;
+                            uiManager.updateTimerDisplay();
+                        }, 1000);
+                    } else {
+                        if (timerState.timeLeft <= 0) { // Ensure time is set if starting from 0
+                            timerState.totalTime = timerManager.getDuration(timerState.mode) * 60;
+                            timerState.timeLeft = timerState.totalTime;
+                        }
+                         if (timerState.totalTime <= 0) { // Prevent starting with 0 duration
+                             console.warn("Timer duration invalid.");
+                             timerState.running = false;
+                             uiManager.updateTimerButtons();
+                             uiManager.updateTimerMessage("Set a valid duration.");
+                             return;
+                         }
+                        timerInterval = setInterval(() => {
+                            if (timerState.timeLeft > 0) {
+                                timerState.timeLeft--;
+                                uiManager.updateTimerDisplay();
+                            } else {
+                                timerManager.complete();
+                            }
+                        }, 1000);
+                    }
+                     if (settings.soundBackground !== 'none') { soundManager.playBackground(settings.soundBackground); }
+                },
+                pause: () => {
+                    if (!timerState.running) return;
+                    timerState.running = false;
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    uiManager.updateTimerButtons();
+                    uiManager.updateTimerMessage("Timer paused.");
+                    document.title = '✔️ TaskMaster | Your Focus Hub';
+                    if (currentBgAudio) { currentBgAudio.pause(); }
+                },
+                reset: () => {
+                    soundManager.playButtonClick();
+                    timerManager.pause();
+                    if (timerState.mode === 'stopwatch') {
+                        timerState.stopwatchTime = 0;
+                    } else {
+                        timerState.timeLeft = timerManager.getDuration(timerState.mode) * 60;
+                        timerState.totalTime = timerState.timeLeft;
+                    }
+                    uiManager.updateTimerDisplay();
+                    uiManager.updateTimerButtons();
+                    uiManager.updateTimerMessage("Timer reset. Ready?");
+                    soundManager.stopBackground();
+                },
+                complete: () => {
+                    timerManager.pause();
+                    soundManager.playTimerEnd();
+                    uiManager.triggerConfetti();
+
+                    let nextMode = 'pomodoro';
+                    let completedMode = timerState.mode;
+                    let focusTimeEarned = 0;
+                    let modalTitle = "Session Complete!";
+                    let modalMessage = "Great job!";
+
+                    if (completedMode === 'pomodoro') {
+                        stats.pomodorosToday += 1;
+                        pomodoroCycleCount += 1;
+                        stats.pomodoroHistory.push('P');
+                        focusTimeEarned = settings.pomodoroDuration;
+                        if (pomodoroCycleCount > 0 && pomodoroCycleCount % 4 === 0) {
+                            nextMode = 'longBreak';
+                            stats.pomodoroHistory.push('L');
+                            modalTitle = "Pomodoro Complete! 🎉";
+                            modalMessage = `Awesome focus! Time for a well-deserved long break (${settings.longBreakDuration}m).`;
+                        } else {
+                            nextMode = 'shortBreak';
+                            stats.pomodoroHistory.push('S');
+                             modalTitle = "Pomodoro Complete! 👍";
+                            modalMessage = `Nice work! Take a short break (${settings.shortBreakDuration}m).`;
+                        }
+                    } else if (completedMode === 'shortBreak' || completedMode === 'longBreak') {
+                        nextMode = 'pomodoro';
+                        modalTitle = "Break Over!";
+                        modalMessage = "Ready for the next focus session? Let's go! 💪";
+                    } else if (completedMode === 'custom') {
+                        focusTimeEarned = parseInt(customMinutesInput.value) || 0;
+                        modalTitle = "Custom Timer Done! ✅";
+                        modalMessage = `You completed your ${focusTimeEarned}m session! What's next?`;
+                        nextMode = 'pomodoro';
+                    }
+
+                    if (focusTimeEarned > 0) { stats.totalFocusTimeToday += focusTimeEarned; }
+                    statsManager.updateDailyCompletion();
+                    storageManager.saveStats();
+                    uiManager.updateStats();
+                    uiManager.showModal(modalTitle, modalMessage, false, null, '', 'Okay');
+                    timerManager.switchMode(nextMode); // Switch mode but don't auto-start
+                },
+                 switchMode: (newMode) => {
+                    if (!newMode || timerState.mode === newMode) return; // Don't switch if already in mode or invalid mode
+
+                    soundManager.playButtonClick();
+                    timerManager.pause();
+                    timerState.mode = newMode;
+                    timerModesBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === newMode));
+                    if(customTimerInputArea) customTimerInputArea.classList.toggle('hidden', newMode !== 'custom');
+
+                    if (newMode === 'stopwatch') { timerState.stopwatchTime = 0; timerState.timeLeft = 0; timerState.totalTime = 0; }
+                    else { timerState.timeLeft = timerManager.getDuration(newMode) * 60; timerState.totalTime = timerState.timeLeft; timerState.stopwatchTime = 0; }
+
+                    uiManager.updateTimerDisplay();
+                    uiManager.updateTimerButtons();
+                    uiManager.updateTimerMessage(`Switched to ${timerModeLabel.textContent}. Press Start when ready.`);
+                    soundManager.stopBackground();
+                 },
+                 getDuration: (mode) => {
+                     try {
+                         switch (mode) {
+                            case 'pomodoro': return parseInt(settings.pomodoroDuration) || 25;
+                            case 'shortBreak': return parseInt(settings.shortBreakDuration) || 5;
+                            case 'longBreak': return parseInt(settings.longBreakDuration) || 15;
+                            case 'custom': return parseInt(customMinutesInput?.value) || 10;
+                            default: return 0;
+                         }
+                     } catch (e) {
+                         console.error("Error getting duration:", e);
+                         return (mode === 'pomodoro') ? 25 : (mode === 'shortBreak' ? 5 : (mode === 'longBreak' ? 15 : 10)); // Fallbacks
+                     }
+                 },
+                 updateDurationsFromSettings: () => {
+                     if (!timerState.running && ['pomodoro', 'shortBreak', 'longBreak'].includes(timerState.mode)) {
+                         timerManager.reset();
+                     }
+                     // Update button labels
+                     const pomoBtn = document.querySelector('.timer-modes button[data-mode="pomodoro"]');
+                     const shortBtn = document.querySelector('.timer-modes button[data-mode="shortBreak"]');
+                     const longBtn = document.querySelector('.timer-modes button[data-mode="longBreak"]');
+                     if(pomoBtn) pomoBtn.textContent = `Pomodoro (${settings.pomodoroDuration}m)`;
+                     if(shortBtn) shortBtn.textContent = `Short Break (${settings.shortBreakDuration}m)`;
+                     if(longBtn) longBtn.textContent = `Long Break (${settings.longBreakDuration}m)`;
+                     uiManager.updateTimerDisplay(); // Update label if current mode is affected
+                 }
+            };
+
+            // --- Stats & Daily Reset Manager ---
+            const statsManager = {
+                getTodayDateString: () => new Date().toISOString().split('T')[0],
+                getCurrentWeekString: (date = new Date()) => { // Added optional date param
+                     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                     const dayNum = d.getUTCDay() || 7;
+                     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                     const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                     const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+                     return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+                 },
+                checkDailyReset: () => {
+                    const today = statsManager.getTodayDateString();
+                    const lastVisit = stats.lastVisitDate;
+
+                    if (lastVisit && lastVisit !== today) {
+                        const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+                        const yesterdayString = yesterday.toISOString().split('T')[0];
+
+                        const completedYesterday = stats.tasksCompletedToday;
+                        const missedYesterday = tasks.filter(t => !t.completed).length;
+                        let streakMaintained = false;
+
+                        if (stats.lastCompletedDate === yesterdayString) { streakMaintained = true; }
+                        else { stats.dailyStreak = 0; } // Reset streak if yesterday wasn't completed
+
+                        stats.dailySummary = { completed: completedYesterday, missed: missedYesterday, streakMaintained: streakMaintained };
+
+                        // Reset daily counters
+                        stats.tasksCompletedToday = 0;
+                        stats.pomodorosToday = 0;
+                        stats.totalFocusTimeToday = 0;
+                        stats.pomodoroHistory = [];
+                        pomodoroCycleCount = 0;
+
+                        statsManager.updateWeeklyStreak(today); // Update weekly based on *new* week if needed
+
+                        // Only show summary if there was activity yesterday or tasks missed
+                        if (completedYesterday > 0 || missedYesterday > 0) {
+                            uiManager.showDailySummary(stats.dailySummary);
+                        } else {
+                             stats.dailySummary = null; // No need to show empty summary
+                        }
+
+                    } else if (!lastVisit) { /* First visit */ }
+                      else { stats.dailySummary = null; /* Same day */ }
+
+                    stats.lastVisitDate = today;
+                    storageManager.saveStats();
+                    // uiManager.updateStats(); // Update happens in init or after potential reset
+                },
+                 updateDailyCompletion: () => {
+                     const today = statsManager.getTodayDateString();
+                     if (stats.lastCompletedDate !== today) { // Only update streak once per day
+                        const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+                        const yesterdayString = yesterday.toISOString().split('T')[0];
+
+                        if (stats.lastCompletedDate === yesterdayString) { stats.dailyStreak += 1; }
+                        else { stats.dailyStreak = 1; } // Start or restart streak
+
+                        stats.lastCompletedDate = today;
+                        statsManager.updateWeeklyStreak(today); // Check weekly streak whenever daily is updated
+                        storageManager.saveStats();
+                        uiManager.updateStats();
+                     }
+                 },
+                 updateWeeklyStreak: (todayDateString) => {
+                     const currentWeek = statsManager.getCurrentWeekString(new Date(todayDateString));
+                     if (stats.lastCompletedWeek !== currentWeek) {
+                         const date = new Date(todayDateString);
+                         const lastWeekDate = new Date(date); lastWeekDate.setDate(date.getDate() - 7);
+                         const expectedLastWeekString = statsManager.getCurrentWeekString(lastWeekDate);
+
+                         if (stats.lastCompletedWeek === expectedLastWeekString) { stats.weeklyStreak += 1; }
+                         else { stats.weeklyStreak = 1; } // Start or restart weekly streak
+
+                         stats.lastCompletedWeek = currentWeek;
+                         // Save/UI update happens in updateDailyCompletion
+                     }
+                 },
+                 resetAllData: () => {
+                    uiManager.showModal(
+                         "Confirm Reset",
+                         "Are you sure you want to reset ALL data? This includes tasks, stats, and settings! This cannot be undone.",
+                         true, // Show confirm button
+                         () => { // Confirm callback
+                             timerManager.pause();
+                             timerManager.reset();
+                             soundManager.stopBackground();
+                             storageManager.clearAll();
+                             // Reset state variables
+                             tasks = [];
+                             settings = { ...defaultSettings }; // Deep copy defaults
+                             stats = { ...defaultStats };     // Deep copy defaults
+                             currentFilter = 'all';
+                             pomodoroCycleCount = 0;
+                             // Re-initialize UI
+                             initializer.init(); // Full re-init
+                             uiManager.hideSettings(); // Close settings if open
+                             uiManager.showModal("Data Reset", "All data has been cleared.", false, null, '', 'Okay');
+                         },
+                         'Yes, Reset All', // Confirm button text
+                         'Cancel'         // Close button text
+                     );
+                 }
+            };
+
+            // --- Event Listeners ---
+            const setupEventListeners = () => {
+                if (themeToggleBtn) themeToggleBtn.addEventListener('click', () => {
+                    soundManager.playButtonClick();
+                    settings.theme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+                    uiManager.applyTheme(settings.theme);
+                    storageManager.saveSettings();
+                });
+
+                if (settingsBtn) settingsBtn.addEventListener('click', () => { soundManager.playButtonClick(); uiManager.showSettings(); });
+                if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => { soundManager.playButtonClick(); uiManager.hideSettings(); });
+                if (settingsOverlay) settingsOverlay.addEventListener('click', (e) => { if (e.target === settingsOverlay) { soundManager.playButtonClick(); uiManager.hideSettings(); } });
+
+                if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', () => {
+                    soundManager.playButtonClick();
+                    settings.username = usernameInput?.value.trim() || defaultSettings.username;
+                    settings.pomodoroDuration = parseInt(pomodoroDurationInput?.value) || defaultSettings.pomodoroDuration;
+                    settings.shortBreakDuration = parseInt(shortBreakDurationInput?.value) || defaultSettings.shortBreakDuration;
+                    settings.longBreakDuration = parseInt(longBreakDurationInput?.value) || defaultSettings.longBreakDuration;
+                    settings.soundUI = toggleUiSounds?.checked ?? defaultSettings.soundUI;
+                    settings.soundAlerts = toggleTimerAlerts?.checked ?? defaultSettings.soundAlerts;
+                    const selectedBgSound = backgroundSoundSelect?.value || defaultSettings.soundBackground;
+
+                    soundManager.updateMuteStates();
+                    if (selectedBgSound !== settings.soundBackground) { soundManager.playBackground(selectedBgSound); } // Also saves setting
+                    else { storageManager.saveSettings(); } // Save other settings if sound didn't change
+
+                    uiManager.updateUsernameDisplay();
+                    timerManager.updateDurationsFromSettings();
+                    uiManager.hideSettings();
+                    uiManager.showModal("Settings Saved", "Your preferences have been updated.", false, null, '', 'Okay');
+                });
+
+                if (resetDataBtn) resetDataBtn.addEventListener('click', () => { soundManager.playButtonClick(); statsManager.resetAllData(); });
+
+                if (addTaskForm) addTaskForm.addEventListener('submit', (e) => { e.preventDefault(); taskManager.addTask(newTaskInput.value, newTaskPriority.value); });
+
+                // Task List Event Delegation
+                if (taskList) {
+                    taskList.addEventListener('click', (e) => {
+                        const taskItem = e.target.closest('.task-item');
+                        if (!taskItem) return;
+                        const taskId = taskItem.dataset.id;
+
+                        if (e.target.type === 'checkbox') { taskManager.toggleComplete(taskId); }
+                        else if (e.target.classList.contains('delete-btn')) {
+                             soundManager.playButtonClick();
+                             uiManager.showModal("Confirm Deletion", "Delete this task?", true, () => {
+                                taskManager.deleteTask(taskId);
+                             }, 'Delete', 'Cancel');
+                        }
+                        else if (e.target.classList.contains('edit-btn')) {
+                            soundManager.playButtonClick();
+                            const textSpan = taskItem.querySelector('.task-text');
+                            const editInput = taskItem.querySelector('.edit-input');
+                            const saveBtn = taskItem.querySelector('.save-btn');
+                            const editBtn = taskItem.querySelector('.edit-btn');
+                            if (textSpan && editInput && saveBtn && editBtn) {
+                                textSpan.style.display = 'none';
+                                editInput.style.display = 'block';
+                                editInput.value = textSpan.textContent; // Ensure input has current text
+                                editInput.focus();
+                                saveBtn.style.display = 'inline-block';
+                                editBtn.style.display = 'none';
+                            }
+                        }
+                        else if (e.target.classList.contains('save-btn')) {
+                            const editInput = taskItem.querySelector('.edit-input');
+                            if (editInput) taskManager.editTask(taskId, editInput.value);
+                        }
+                    });
+                    taskList.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && e.target.classList.contains('edit-input')) {
+                            const taskItem = e.target.closest('.task-item');
+                            if (taskItem) taskManager.editTask(taskItem.dataset.id, e.target.value);
+                        }
+                    });
+                    taskList.addEventListener('focusout', (e) => { // Handle clicking away from edit input
+                        if (e.target.classList.contains('edit-input')) {
+                           const taskItem = e.target.closest('.task-item');
+                           if (taskItem) {
+                                const textSpan = taskItem.querySelector('.task-text');
+                                const editInput = taskItem.querySelector('.edit-input');
+                                const saveBtn = taskItem.querySelector('.save-btn');
+                                const editBtn = taskItem.querySelector('.edit-btn');
+                                // Only revert if save wasn't clicked (check if save button is still visible)
+                                if (saveBtn && saveBtn.style.display !== 'none') {
+                                     if (textSpan) textSpan.style.display = 'block';
+                                     if (editInput) editInput.style.display = 'none';
+                                     saveBtn.style.display = 'none';
+                                     if (editBtn) editBtn.style.display = 'inline-block';
+                                }
+                           }
+                        }
+                    });
+
+                    // Drag and Drop
+                    taskList.addEventListener('dragstart', (e) => {
+                        if (e.target.classList.contains('task-item')) {
+                            draggedItem = e.target;
+                            setTimeout(() => e.target.classList.add('dragging'), 0);
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+                        }
+                    });
+                    taskList.addEventListener('dragend', (e) => { if (draggedItem) { draggedItem.classList.remove('dragging'); } draggedItem = null; taskList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); });
+                    taskList.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        const targetItem = e.target.closest('.task-item');
+                        taskList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                        if (targetItem && targetItem !== draggedItem) {
+                            // Determine if dragging above or below middle of target
+                            const rect = targetItem.getBoundingClientRect();
+                            const offsetY = e.clientY - rect.top;
+                            if (offsetY < rect.height / 2) {
+                                targetItem.classList.add('drag-over'); // Highlight top border (implicitly via CSS)
+                            } else {
+                                // Maybe add a different class or rely on default browser behavior
+                                // For simplicity, just highlight the item
+                                targetItem.classList.add('drag-over');
+                            }
+                            e.dataTransfer.dropEffect = 'move';
+                        } else { e.dataTransfer.dropEffect = 'none'; }
+                    });
+                    taskList.addEventListener('dragleave', (e) => { const el = e.target.closest('.task-item'); if (el) el.classList.remove('drag-over'); });
+                    taskList.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const targetItem = e.target.closest('.task-item');
+                        taskList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                        if (targetItem && draggedItem && targetItem !== draggedItem) {
+                            taskManager.reorderTasks(draggedItem.dataset.id, targetItem.dataset.id);
+                            soundManager.playButtonClick();
+                        }
+                         if (draggedItem) { draggedItem.classList.remove('dragging'); } // Ensure class removal
+                        draggedItem = null;
+                    });
+                } // End taskList check
+
+                filterBtns.forEach(btn => { btn.addEventListener('click', () => { soundManager.playButtonClick(); currentFilter = btn.dataset.filter; uiManager.updateFilterButtons(); uiManager.renderTasks(); }); });
+                timerModesBtns.forEach(btn => { btn.addEventListener('click', () => { timerManager.switchMode(btn.dataset.mode); }); });
+
+                if (startPauseBtn) startPauseBtn.addEventListener('click', timerManager.startPause);
+                if (resetBtn) resetBtn.addEventListener('click', timerManager.reset);
+
+                // Use event delegation for modals for robustness
+                document.addEventListener('click', (e) => {
+                    if (e.target.matches('#modal-close-btn')) { soundManager.playButtonClick(); uiManager.hideModal(); }
+                    if (e.target.matches('#daily-summary-close-btn')) {
+                         soundManager.playButtonClick();
+                         uiManager.hideDailySummary();
+                         stats.dailySummary = null; // Clear after viewing
+                         storageManager.saveStats();
+                    }
+                     // Close modals on overlay click
+                     if (e.target.matches('#modal-overlay')) { soundManager.playButtonClick(); uiManager.hideModal(); }
+                     if (e.target.matches('#daily-summary-overlay')) { soundManager.playButtonClick(); uiManager.hideDailySummary(); stats.dailySummary = null; storageManager.saveStats(); }
+                });
+
+                // Keyboard Shortcuts
+                document.addEventListener('keydown', (e) => {
+                    const activeEl = document.activeElement;
+                    const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+
+                    if (e.code === 'Space' && !isInputFocused) { e.preventDefault(); timerManager.startPause(); }
+                    if (e.key === 'Escape') {
+                         if (settingsOverlay?.classList.contains('visible')) { uiManager.hideSettings(); soundManager.playButtonClick(); }
+                         else if (modalOverlay?.classList.contains('visible')) { uiManager.hideModal(); soundManager.playButtonClick(); }
+                         else if (dailySummaryOverlay?.classList.contains('visible')) { uiManager.hideDailySummary(); soundManager.playButtonClick(); stats.dailySummary = null; storageManager.saveStats(); }
+                         else if (activeEl && activeEl.classList.contains('edit-input')) { activeEl.blur(); } // Blur edit input on Esc
+                    }
+                    if (e.ctrlKey && e.key === 'h') { e.preventDefault(); uiManager.showModal("🤫 Hidden Tip!", "Try the 'Eat The Frog' technique: tackle your hardest task first thing!"); }
+                });
+            };
+
+            // --- Initializer ---
+            const initializer = {
+                init: () => {
+                    console.log("Initializing TaskMaster...");
+                    // 1. Load Data (merging defaults)
+                    settings = storageManager.loadSettings();
+                    tasks = storageManager.loadTasks();
+                    stats = storageManager.loadStats();
+                    pomodoroCycleCount = stats.pomodoroHistory.filter(h => h === 'P').length % 4; // Recalculate cycle count today
+
+                    // 2. Apply Settings & Initial UI
+                    uiManager.applyTheme(settings.theme);
+                    uiManager.updateUsernameDisplay();
+                    uiManager.startQuoteCarousel(); // Start JS quote rotation
+                    soundManager.updateMuteStates();
+                    soundManager.setBackgroundSoundFromSettings();
+                    timerManager.updateDurationsFromSettings();
+
+                    // 3. Check Daily Reset
+                    statsManager.checkDailyReset(); // May update stats/show summary
+
+                    // 4. Render Initial Content
+                    uiManager.renderTasks(); // Render based on current/potentially reset tasks
+                    uiManager.updateFilterButtons();
+                    timerManager.switchMode(timerState.mode); // Set initial timer mode display & time
+
+                    // 5. Final UI updates & Setup Interactions
+                    uiManager.updateStats(); // Update stats display after potential reset
+                    setupEventListeners();
+
+                    // 6. Show stored daily summary if present
+                    if (stats.dailySummary) { uiManager.showDailySummary(stats.dailySummary); }
+
+                    console.log("TaskMaster Ready!");
+                }
+            };
+
+            // --- Start the App ---
+            initializer.init();
+
+        }); // End DOMContentLoaded
     </script>
+
 </body>
 </html>
